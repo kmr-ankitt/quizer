@@ -30,3 +30,7 @@ pnpm dev
 cd server
 mvn spring-boot:run
 ```
+
+## Architecture
+
+[View Architecture Diagram](https://excalidraw.com/#json=6jRK7yzniDJLL2e-cN_r7,-kO833B4FniizIns2KVjtg)
