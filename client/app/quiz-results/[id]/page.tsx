@@ -215,12 +215,12 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
                         <div
                           key={option.id}
                           className={`flex items-center rounded-lg border p-3 ${option.id === question.correctAnswer && option.id === question.userAnswer
+                            ? "bg-green-500/10 border-green-500/50"
+                            : option.id === question.correctAnswer
                               ? "bg-green-500/10 border-green-500/50"
-                              : option.id === question.correctAnswer
-                                ? "bg-green-500/10 border-green-500/50"
-                                : option.id === question.userAnswer
-                                  ? "bg-red-500/10 border-red-500/50"
-                                  : ""
+                              : option.id === question.userAnswer
+                                ? "bg-red-500/10 border-red-500/50"
+                                : ""
                             }`}
                         >
                           <div className="flex flex-1 items-center gap-2">

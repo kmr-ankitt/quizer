@@ -16,7 +16,20 @@ import {
   Cell,
   Legend,
 } from "recharts"
-import { Plus, Search, MoreHorizontal, Edit, Trash2, Users, BookOpen, BarChart3, LogOut, Menu, X } from "lucide-react"
+import {
+  Plus,
+  Search,
+  MoreHorizontal,
+  Edit,
+  Trash2,
+  Users,
+  BookOpen,
+  BarChart3,
+  LogOut,
+  Menu,
+  X,
+  Sparkles,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -38,27 +51,27 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Sample data
 const quizzes = [
-  { id: 1, title: "Math Fundamentals", questions: 10, students: 24, date: "2023-10-15" },
-  { id: 2, title: "Science Quiz", questions: 15, students: 18, date: "2023-10-10" },
-  { id: 3, title: "History Test", questions: 20, students: 22, date: "2023-10-05" },
-  { id: 4, title: "English Grammar", questions: 12, students: 20, date: "2023-09-28" },
-  { id: 5, title: "Geography Challenge", questions: 15, students: 16, date: "2023-09-20" },
+  { id: 1, title: "Data Structures", questions: 12, students: 30, date: "2023-10-15" },
+  { id: 2, title: "Operating Systems", questions: 18, students: 25, date: "2023-10-10" },
+  { id: 3, title: "Computer Networks", questions: 22, students: 28, date: "2023-10-05" },
+  { id: 4, title: "Database Management", questions: 15, students: 26, date: "2023-09-28" },
+  { id: 5, title: "Artificial Intelligence", questions: 20, students: 22, date: "2023-09-20" },
 ]
 
 const students = [
-  { id: 1, name: "Alex Johnson", email: "alex@example.com", quizzesTaken: 5, avgScore: 85 },
-  { id: 2, name: "Sam Wilson", email: "sam@example.com", quizzesTaken: 4, avgScore: 92 },
-  { id: 3, name: "Jamie Smith", email: "jamie@example.com", quizzesTaken: 5, avgScore: 78 },
-  { id: 4, name: "Taylor Brown", email: "taylor@example.com", quizzesTaken: 3, avgScore: 88 },
-  { id: 5, name: "Jordan Lee", email: "jordan@example.com", quizzesTaken: 5, avgScore: 95 },
+  { id: 1, name: "Aarav Sharma", email: "aarav@example.com", quizzesTaken: 4, avgScore: 92 },
+  { id: 2, name: "Ishita Verma", email: "ishita@example.com", quizzesTaken: 5, avgScore: 78 },
+  { id: 3, name: "Rohan Gupta", email: "rohan@example.com", quizzesTaken: 3, avgScore: 88 },
+  { id: 4, name: "Ananya Singh", email: "ananya@example.com", quizzesTaken: 5, avgScore: 95 },
+  { id: 5, name: "Kabir Patel", email: "kabir@example.com", quizzesTaken: 4, avgScore: 85 },
 ]
 
 const barChartData = [
-  { name: "Math", avgScore: 82 },
-  { name: "Science", avgScore: 88 },
-  { name: "History", avgScore: 76 },
-  { name: "English", avgScore: 84 },
-  { name: "Geography", avgScore: 79 },
+  { name: "Data Structures", avgScore: 82 },
+  { name: "Operating Systems", avgScore: 88 },
+  { name: "Computer Networks", avgScore: 76 },
+  { name: "Database Management", avgScore: 84 },
+  { name: "Artificial Intelligence", avgScore: 79 },
 ]
 
 const pieChartData = [
@@ -95,7 +108,9 @@ export default function TeacherDashboard() {
             >
               {mobileMenuOpen ? <X /> : <Menu />}
             </Button>
-            <Link href="/" className="font-bold text-xl">Quizer</Link>
+            <Link href="/" className="font-bold text-xl">
+              QuizMaster
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-1">
@@ -202,7 +217,7 @@ export default function TeacherDashboard() {
                 </div>
                 <Link href="/teacher-dashboard/create-quiz">
                   <Button className="gap-2">
-                    <Plus className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" />
                     Create Quiz
                   </Button>
                 </Link>
@@ -376,7 +391,9 @@ export default function TeacherDashboard() {
                               <TableCell className="font-medium">{quiz.title}</TableCell>
                               <TableCell className="hidden md:table-cell">{quiz.questions}</TableCell>
                               <TableCell className="hidden md:table-cell">{quiz.students}</TableCell>
-                              <TableCell className="hidden md:table-cell">{new Date(quiz.date).toLocaleDateString()}</TableCell>
+                              <TableCell className="hidden md:table-cell">
+                                {new Date(quiz.date).toLocaleDateString()}
+                              </TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild>
@@ -459,7 +476,12 @@ export default function TeacherDashboard() {
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-8 w-8">
                                     <AvatarImage src="/placeholder.svg" alt={student.name} />
-                                    <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                    <AvatarFallback>
+                                      {student.name
+                                        .split(" ")
+                                        .map((n) => n[0])
+                                        .join("")}
+                                    </AvatarFallback>
                                   </Avatar>
                                   {student.name}
                                 </div>
@@ -467,7 +489,15 @@ export default function TeacherDashboard() {
                               <TableCell className="hidden md:table-cell">{student.email}</TableCell>
                               <TableCell className="hidden md:table-cell">{student.quizzesTaken}</TableCell>
                               <TableCell>
-                                <Badge variant={student.avgScore >= 90 ? "success" : student.avgScore >= 70 ? "default" : "destructive"}>
+                                <Badge
+                                  variant={
+                                    student.avgScore >= 90
+                                      ? "success"
+                                      : student.avgScore >= 70
+                                        ? "default"
+                                        : "destructive"
+                                  }
+                                >
                                   {student.avgScore}%
                                 </Badge>
                               </TableCell>
@@ -481,8 +511,9 @@ export default function TeacherDashboard() {
               </Tabs>
             </div>
           </div>
-        </main >
+        </main>
       </div>
     </div>
   )
 }
+
