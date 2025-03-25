@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.quizer.ai.QuizGenerate;
 import com.example.quizer.model.QuizModel;
 import com.example.quizer.repository.QuizRepository;
 
@@ -23,7 +24,8 @@ public class QuizController {
 
     @GetMapping("/")
     public String hello() {
-        return "Hello, World!";
+        QuizGenerate quiz = new QuizGenerate();
+        return quiz.generateQuiz("who is zuck");
     }
 
     @GetMapping("/test-db")
