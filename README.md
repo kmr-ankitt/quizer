@@ -33,4 +33,4 @@ mvn spring-boot:run
 
 ## Architecture
 
-[View Architecture Diagram](https://excalidraw.com/#json=6jRK7yzniDJLL2e-cN_r7,-kO833B4FniizIns2KVjtg)
+[View Architecture Diagram]( https://app.eraser.io/workspace/rgUbU6CPW7cc0PQm7zgR?origin=share&elements=_y1X-tB7BVQpdXbzqoO4ww)
