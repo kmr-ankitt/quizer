@@ -3,8 +3,10 @@
 Yet another 'Quiz Management System' Application bulid just for college sake.
 
 ## Tech Stack
-- Frontend: Next.js 
-- Backend: Java Spring Boot
+- Java Spring Boot
+- JDBC
+- Next.js 
+- PostgreSQL
 
 ## Pre-requisites
 - Node.js 
