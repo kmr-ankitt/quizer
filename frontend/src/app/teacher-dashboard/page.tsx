@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import {
   Search,
@@ -28,15 +28,16 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { fetchAllQuizzes } from "../_services/fetchDb"
 
 // Sample data
-const quizzes = [
-  { id: 1, title: "Data Structures", questions: 12, students: 30, date: "2023-10-15" },
-  { id: 2, title: "Operating Systems", questions: 18, students: 25, date: "2023-10-10" },
-  { id: 3, title: "Computer Networks", questions: 22, students: 28, date: "2023-10-05" },
-  { id: 4, title: "Database Management", questions: 15, students: 26, date: "2023-09-28" },
-  { id: 5, title: "Artificial Intelligence", questions: 20, students: 22, date: "2023-09-20" },
-]
+interface Quiz {
+  id: number;
+  title: string;
+  questions: number;
+  students: number;
+  due_date: string;
+}
 
 const students = [
   { id: 1, name: "Aarav Sharma", email: "aarav@example.com", quizzesTaken: 4, avgScore: 92 },
@@ -50,11 +51,21 @@ const students = [
 export default function TeacherDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [quizToDelete, setQuizToDelete] = useState<number | null>(null)
+  const [, setQuizToDelete] = useState<number | null>(null)
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
   const handleDeleteQuiz = () => {
     setDeleteDialogOpen(false)
   }
+
+  useEffect(() => {
+    const getData = async () => {
+      const quizzesData = await fetchAllQuizzes();
+      console.log(quizzesData);
+      setQuizzes(quizzesData);
+    };
+    getData();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -144,7 +155,7 @@ export default function TeacherDashboard() {
                               <TableCell className="hidden md:table-cell">{quiz.questions}</TableCell>
                               <TableCell className="hidden md:table-cell">{quiz.students}</TableCell>
                               <TableCell className="hidden md:table-cell">
-                                {new Date(quiz.date).toLocaleDateString()}
+                                {quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : "N/A"}
                               </TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>

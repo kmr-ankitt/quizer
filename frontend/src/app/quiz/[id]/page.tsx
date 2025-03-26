@@ -91,7 +91,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
-  const [timeRemaining, setTimeRemaining] = useState(quizData.timeLimit * 60) // seconds
+  const [timeRemaining, ] = useState(quizData.timeLimit * 60) // seconds
   const [exitDialogOpen, setExitDialogOpen] = useState(false)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
 

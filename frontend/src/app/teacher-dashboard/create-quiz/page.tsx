@@ -56,14 +56,16 @@ export default function CreateQuizPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (questions.length === 0) {
-      return
+      console.error("Please generate or add questions before submitting.");
+      return;
     }
 
-    // In a real app, you would save the quiz to your database here
-    console.log("Quiz data:", { ...values, questions })
-
-    router.push("/teacher-dashboard")
-  }
+    try {
+      router.push("/");
+    } catch (error) {
+      console.error("Failed to create quiz:", error);
+    }
+  };
 
   const handleGenerateQuestions = async () => {
     const values = form.getValues()
@@ -338,7 +340,12 @@ export default function CreateQuizPage() {
                       Cancel
                     </Button>
                   </Link>
-                  <Button type="submit">Create Quiz</Button>
+                  <Button
+                    type="submit"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
+                    Create Quiz
+                  </Button>
                 </div>
               </form>
             </Form>

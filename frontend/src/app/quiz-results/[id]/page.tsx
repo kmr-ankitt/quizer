@@ -145,15 +145,14 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
                         </div>
                         <Progress
                           value={quizResult.score}
-                          className={`h-2 ${
-                            quizResult.score >= 90
+                          className={`h-2 ${quizResult.score >= 90
                               ? "bg-green-500"
                               : quizResult.score >= 70
                                 ? "bg-blue-500"
                                 : quizResult.score >= 50
                                   ? "bg-amber-500"
                                   : "bg-red-500"
-                          }`}
+                            }`}
                         />
                       </div>
                       <div className="flex gap-2 flex-wrap">
