@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Switch } from "@radix-ui/react-switch"
-import generateQuizQuestion from "@/lib/jsonParser"
+import { fetchGeneratedQuestions } from "@/app/_services/fetchGeneratedQuestions"
 
 const formSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -75,7 +75,7 @@ export default function CreateQuizPage() {
     setIsGenerating(true)
 
     try {
-      const generatedQuestions = await generateQuizQuestion({
+      const generatedQuestions = await fetchGeneratedQuestions({
         subject: values.subject,
         difficulty: values.difficulty,
         numberOfQuestions: values.numberOfQuestions,
@@ -129,7 +129,7 @@ export default function CreateQuizPage() {
                           <FormItem>
                             <FormLabel>Quiz Title</FormLabel>
                             <FormControl>
-                              <Input placeholder="e.g., Math Fundamentals" {...field} />
+                              <Input placeholder="e.g., Data Structures" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
