@@ -1,12 +1,8 @@
 export const fetchAllQuizzes = async () => {
   try {
-    const response = await fetch('http://localhost:8080/quizzes');
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status} - ${response.statusText}`);
-    }
-    const data = await response.json();
-    console.log("Fetched Quizzes:", data);
-    return data;
+    const response = await fetch('http://localhost:8080/quiz');
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return await response.json();
   } catch (error) {
     console.error('Error fetching quizzes:', error);
     return [];
@@ -15,53 +11,86 @@ export const fetchAllQuizzes = async () => {
 
 export const fetchQuizById = async (id: number) => {
   try {
-    const response = await fetch(`http://localhost:8080/quizzes/${id}`);
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status} - ${response.statusText}`);
-    }
-    const data = await response.json();
-    console.log("Fetched Quiz:", data);
-    return data;
+    const response = await fetch(`http://localhost:8080/${id}`);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return await response.json();
   } catch (error) {
     console.error(`Error fetching quiz with ID ${id}:`, error);
     return null;
   }
 };
 
-
-export const updateQuiz = async (id: number, quizData: {
+export const createQuiz = async (quizData: {
   title: string;
+  description: string;
+  difficulty: string;
   questions: number;
   timeLimit: string;
   dueDate: string;
+  published: boolean;
 }) => {
   try {
-    const response = await fetch(`http://localhost:8080/quizzes/${id}`, {
-      method: 'PUT',
+    const response = await fetch('http://localhost:8080/set-quiz', {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(quizData),
     });
 
-    if (!response.ok) {
-      throw new Error(`Server error: ${response.status} - ${response.statusText}`);
-    }
-    console.log('Quiz updated successfully');
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    console.log('Quiz created successfully');
   } catch (error) {
-    console.error(`Error updating quiz with ID ${id}:`, error);
+    console.error('Error creating quiz:', error);
   }
 };
 
-export const deleteQuiz = async (id: number) => {
+export const showQuizzes = async () => {
   try {
-    const response = await fetch(`http://localhost:8080/quizzes/${id}`, {
-      method: 'DELETE',
+    const response = await fetch('http://localhost:8080/show-quizzes');
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching published quizzes:', error);
+    return [];
+  }
+};
+
+export const showStudents = async (quizId: number) => {
+  try {
+    const response = await fetch(`http://localhost:8080/show-students/${quizId}`);
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error(`Error fetching students for quiz ID ${quizId}:`, error);
+    return [];
+  }
+};
+
+export const completeQuiz = async (studentId: number, quizId: number, score: number) => {
+  try {
+    const response = await fetch('http://localhost:8080/complete-quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId, quizId, score }),
     });
 
+    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    console.log('Quiz attempt recorded successfully');
+  } catch (error) {
+    console.error('Error completing quiz:', error);
+  }
+};
+
+export const fetchAllStudents = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/students");
     if (!response.ok) {
       throw new Error(`Server error: ${response.status} - ${response.statusText}`);
     }
-    console.log('Quiz deleted successfully');
+    const data = await response.json();
+    console.log("Fetched Students:", data);
+    return data;
   } catch (error) {
-    console.error(`Error deleting quiz with ID ${id}:`, error);
+    console.error("Error fetching students:", error);
+    return [];
   }
 };

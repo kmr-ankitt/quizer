@@ -28,7 +28,7 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { fetchAllQuizzes } from "../_services/fetchDb"
+import { fetchAllQuizzes, fetchAllStudents } from "../_services/fetchDb"
 
 // Sample data
 interface Quiz {
@@ -39,20 +39,21 @@ interface Quiz {
   due_date: string;
 }
 
-const students = [
-  { id: 1, name: "Aarav Sharma", email: "aarav@example.com", quizzesTaken: 4, avgScore: 92 },
-  { id: 2, name: "Ishita Verma", email: "ishita@example.com", quizzesTaken: 5, avgScore: 78 },
-  { id: 3, name: "Rohan Gupta", email: "rohan@example.com", quizzesTaken: 3, avgScore: 88 },
-  { id: 4, name: "Ananya Singh", email: "ananya@example.com", quizzesTaken: 5, avgScore: 95 },
-  { id: 5, name: "Kabir Patel", email: "kabir@example.com", quizzesTaken: 4, avgScore: 85 },
-]
-
+export interface Student {
+  student_id: number;
+  user_id: number;
+  name: string;
+  registration_number: string;
+  quiz_attempted: number[];
+  quiz_score: number[];
+}
 
 export default function TeacherDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [, setQuizToDelete] = useState<number | null>(null)
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
 
   const handleDeleteQuiz = () => {
     setDeleteDialogOpen(false)
@@ -63,6 +64,10 @@ export default function TeacherDashboard() {
       const quizzesData = await fetchAllQuizzes();
       console.log(quizzesData);
       setQuizzes(quizzesData);
+
+      const studentsData = await fetchAllStudents();
+      console.log(studentsData);
+      setStudents(studentsData);
     };
     getData();
   }, []);
@@ -143,7 +148,6 @@ export default function TeacherDashboard() {
                           <TableRow>
                             <TableHead>Title</TableHead>
                             <TableHead className="hidden md:table-cell">Questions</TableHead>
-                            <TableHead className="hidden md:table-cell">Students</TableHead>
                             <TableHead className="hidden md:table-cell">Date</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
@@ -153,7 +157,6 @@ export default function TeacherDashboard() {
                             <TableRow key={quiz.id}>
                               <TableCell className="font-medium">{quiz.title}</TableCell>
                               <TableCell className="hidden md:table-cell">{quiz.questions}</TableCell>
-                              <TableCell className="hidden md:table-cell">{quiz.students}</TableCell>
                               <TableCell className="hidden md:table-cell">
                                 {quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : "N/A"}
                               </TableCell>
@@ -234,7 +237,7 @@ export default function TeacherDashboard() {
                         </TableHeader>
                         <TableBody>
                           {students.map((student) => (
-                            <TableRow key={student.id}>
+                            <TableRow key={student.student_id}>
                               <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
                                   <Avatar className="h-8 w-8">
@@ -249,19 +252,22 @@ export default function TeacherDashboard() {
                                   {student.name}
                                 </div>
                               </TableCell>
-                              <TableCell className="hidden md:table-cell">{student.email}</TableCell>
-                              <TableCell className="hidden md:table-cell">{student.quizzesTaken}</TableCell>
+                              <TableCell className="hidden md:table-cell">{student.user_id}</TableCell>
+                              <TableCell className="hidden md:table-cell">{student.quiz_attempted}</TableCell>
                               <TableCell>
                                 <Badge
                                   variant={
-                                    student.avgScore >= 90
+                                    (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 90
                                       ? "default"
-                                      : student.avgScore >= 70
+                                      : (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 70
                                         ? "secondary"
                                         : "destructive"
                                   }
                                 >
-                                  {student.avgScore}%
+                                  {(
+                                    student.quiz_score.reduce((a, b) => a + b, 0) /
+                                    student.quiz_score.length
+                                  ).toFixed(2)}%
                                 </Badge>
                               </TableCell>
                             </TableRow>
