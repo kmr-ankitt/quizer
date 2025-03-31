@@ -87,4 +87,9 @@ public class QuizController {
         quizService.completeQuiz(studentId, quizId, score);
         return "Quiz Completed Successfully!";
     }
+
+    @GetMapping("/students")
+    public List<Map<String, Object>> getAllStudents() {
+        return quizService.getAllStudents();
+    }
 }

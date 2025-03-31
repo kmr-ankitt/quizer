@@ -54,4 +54,9 @@ public class QuizService {
                     studentId, quizId, score);
         }
     }
+
+    public List<Map<String, Object>> getAllStudents() {
+        return jdbcTemplate.queryForList("SELECT * FROM students");
+    }
+
 }
