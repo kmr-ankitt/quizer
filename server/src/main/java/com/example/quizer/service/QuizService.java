@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -59,4 +60,21 @@ public class QuizService {
         return jdbcTemplate.queryForList("SELECT * FROM students");
     }
 
+    public void registerUser(String username, String password, String userType) {
+        String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+        jdbcTemplate.update("INSERT INTO users (username, password, user_type) VALUES (?, ?, ?)", username,
+                hashedPassword, userType);
+    }
+
+    public boolean loginUser(String username, String password) {
+        try {
+            Map<String, Object> user = jdbcTemplate.queryForMap("SELECT * FROM users WHERE username = ?", username);
+            String storedHash = (String) user.get("password");
+            return BCrypt.checkpw(password, storedHash);
+        } catch (org.springframework.dao.EmptyResultDataAccessException e) {
+            return false;
+        } catch (org.springframework.dao.DataAccessException e) {
+            return false;
+        }
+    }
 }

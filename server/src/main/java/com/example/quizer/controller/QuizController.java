@@ -92,4 +92,25 @@ public class QuizController {
     public List<Map<String, Object>> getAllStudents() {
         return quizService.getAllStudents();
     }
+
+    @PostMapping("/register")
+    public String registerUser(@RequestBody Map<String, String> userData) {
+        String userUsername = userData.get("username");
+        String userPassword = userData.get("password");
+        String userType = userData.get("userType");
+        quizService.registerUser(userUsername, userPassword, userType);
+        return "User registered successfully!";
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody Map<String, String> userData) {
+        String userUsername = userData.get("username");
+        String userPassword = userData.get("password");
+        boolean success = quizService.loginUser(userUsername, userPassword);
+        if (success) {
+            return ResponseEntity.ok("Login successful!");
+        } else {
+            return ResponseEntity.status(401).body("Invalid username or password.");
+        }
+    }
 }
