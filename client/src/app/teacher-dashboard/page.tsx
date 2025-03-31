@@ -29,6 +29,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { fetchAllQuizzes, fetchAllStudents } from "../_services/fetchDb"
+import { useRouter } from "next/navigation"
 
 // Sample data
 interface Quiz {
@@ -55,6 +56,8 @@ export default function TeacherDashboard() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
 
+  const router = useRouter();
+
   const handleDeleteQuiz = () => {
     setDeleteDialogOpen(false)
   }
@@ -71,6 +74,11 @@ export default function TeacherDashboard() {
     };
     getData();
   }, []);
+
+  const logout = () => {
+    localStorage.removeItem("session")
+    router.push("/")
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -98,6 +106,11 @@ export default function TeacherDashboard() {
               <span className="text-sm font-medium">Teacher</span>
             </div>
             <ModeToggle />
+            <div>
+              <Button variant="outline" className="hidden md:flex" onClick={logout}>
+                Logout
+              </Button>
+            </div>
           </div>
         </div>
       </header>

@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
+import { useRouter } from "next/navigation"
 
 // Sample data
 const availableQuizzes = [
@@ -29,6 +30,12 @@ const completedQuizzes = [
 
 export default function StudentDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const router = useRouter()
+  
+  const logout = () => {
+    localStorage.removeItem("session")
+    router.push("/")
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,6 +61,11 @@ export default function StudentDashboard() {
                 <AvatarFallback>ST</AvatarFallback>
               </Avatar>
               <span className="text-sm font-medium">Student</span>
+            </div>
+            <div>
+              <Button variant="outline" className="hidden md:flex" onClick={logout}>
+                Logout
+              </Button>
             </div>
             <ModeToggle />
           </div>

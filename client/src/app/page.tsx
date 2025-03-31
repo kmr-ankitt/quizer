@@ -22,7 +22,7 @@ export default function Home() {
             Create, manage, and take quizzes with our intuitive platform. Perfect for teachers and students.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-            <Link href="/login">
+            <Link href="/register">
               <Button size="lg" className="w-full sm:w-auto">
                 Get Started <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

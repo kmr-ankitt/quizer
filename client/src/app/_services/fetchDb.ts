@@ -94,3 +94,45 @@ export const fetchAllStudents = async () => {
     return [];
   }
 };
+
+
+export const registerUser = async (username: string, password: string, userType: string) => {
+  try {
+    const response = await fetch('http://localhost:8080/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password, userType }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+    }
+
+    console.log('User registered successfully');
+    return true;
+  } catch (error) {
+    console.error('Error registering user:', error);
+    return false;
+  }
+};
+
+export const loginUser = async (username: string, password: string) => {
+  try {
+    const response = await fetch('http://localhost:8080/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Server error: ${response.status} - ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('Login successful:', data);
+    return data; // Could contain JWT or session data
+  } catch (error) {
+    console.error('Error logging in:', error);
+    return null;
+  }
+};

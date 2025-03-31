@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -11,44 +11,52 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ModeToggle } from "@/components/mode-toggle"
 import Link from "next/link"
-import { loginUser } from "../_services/fetchDb"
+import { registerUser } from "../_services/fetchDb"
 
-const formSchema = z.object({
-  username: z.string().nonempty({ message: "Please enter a valid username" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-})
 
-export default function LoginPage() {
+
+const formSchema = z
+  .object({
+    username: z.string().min(3, { message: "Username must be at least 3 characters" }),
+    password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+    confirmPassword: z.string(),
+    userType: z.enum(["student", "teacher"], { required_error: "Please select a user type" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+
+export default function RegisterPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
-  const defaultRole = searchParams.get("role") || "student"
-  const [role, setRole] = useState<"student" | "teacher">(defaultRole as "student" | "teacher")
+  const [userType, setUserType] = useState<"student" | "teacher">("student")
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
       password: "",
+      confirmPassword: "",
+      userType: "student",
     },
   })
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await loginUser(values.username, values.password)
+      const response = await registerUser(values.username, values.password, values.userType)
+      console.log(values.userType)
+      if (response) {
+        // Store session data in localStorage or cookies
+        localStorage.setItem("session", JSON.stringify({ username: values.username, userType: values.userType }))
 
-      if (!response) {
-        console.error("Login failed")
-        return
+        // Redirect to the appropriate dashboard
+        router.push(`/${values.userType}-dashboard`)
+      } else {
+        console.error("Registration failed:", response)
       }
-
-      localStorage.setItem("session", JSON.stringify({ email: values.username, userType: role }))
-
-      // Redirect to the appropriate dashboard
-      router.push(role === "teacher" ? "/teacher-dashboard" : "/student-dashboard")
     } catch (error) {
-      console.error("An error occurred during login:", error)
+      console.error("An error occurred during registration:", error)
     }
   }
 
@@ -57,19 +65,18 @@ export default function LoginPage() {
     if (sessionData) {
       const session = JSON.parse(sessionData);
       if (session) {
-        router.push(`/${session.userType}-dashboard`);
+        router.push(`/${userType}-dashboard`);
       }
     }
-  }, [router]);
+  });
 
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex justify-between p-5 w-full ">
+        <div className="flex justify-between p-5 w-full">
           <Link href="/" className="font-bold text-xl">
             Quizer
           </Link>
-          <ModeToggle />
         </div>
       </header>
       <main className="flex-1 flex items-center justify-center py-12">
@@ -81,20 +88,23 @@ export default function LoginPage() {
         >
           <Card className="backdrop-blur-sm bg-card/50 border shadow-lg">
             <CardHeader>
-              <CardTitle className="text-2xl text-center">Login to Quizer</CardTitle>
-              <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
+              <CardTitle className="text-2xl text-center">Register for Quizer</CardTitle>
+              <CardDescription className="text-center">Create your account</CardDescription>
             </CardHeader>
             <CardContent>
               <Tabs
-                defaultValue={role}
-                onValueChange={(value) => setRole(value as "student" | "teacher")}
+                defaultValue={userType}
+                onValueChange={(value) => {
+                  form.setValue("userType", value as "student" | "teacher");
+                  setUserType(value as "student" | "teacher");
+                }}
                 className="w-full"
               >
                 <TabsList className="grid w-full grid-cols-2 mb-6">
                   <TabsTrigger value="student">Student</TabsTrigger>
                   <TabsTrigger value="teacher">Teacher</TabsTrigger>
                 </TabsList>
-                <TabsContent value="student">
+                <TabsContent value={userType}>
                   <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <FormField
@@ -104,7 +114,7 @@ export default function LoginPage() {
                           <FormItem>
                             <FormLabel>Username</FormLabel>
                             <FormControl>
-                              <Input placeholder="username" {...field} />
+                              <Input placeholder="Your username" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -123,34 +133,12 @@ export default function LoginPage() {
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full">
-                        Login as Student
-                      </Button>
-                    </form>
-                  </Form>
-                </TabsContent>
-                <TabsContent value="teacher">
-                  <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                       <FormField
                         control={form.control}
-                        name="username"
+                        name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Username</FormLabel>
-                            <FormControl>
-                              <Input placeholder="username" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>Confirm Password</FormLabel>
                             <FormControl>
                               <Input type="password" placeholder="••••••" {...field} />
                             </FormControl>
@@ -158,21 +146,32 @@ export default function LoginPage() {
                           </FormItem>
                         )}
                       />
+                      <FormField
+                        control={form.control}
+                        name="userType"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>User Type</FormLabel>
+                            <FormControl>
+                              <Input value={field.value} readOnly onChange={field.onChange} onBlur={field.onBlur} name={field.name} ref={field.ref} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       <Button type="submit" className="w-full">
-                        Login as Teacher
+                        Register as {userType.charAt(0).toUpperCase() + userType.slice(1)}
                       </Button>
                     </form>
                   </Form>
                 </TabsContent>
               </Tabs>
             </CardContent>
-            <CardFooter className="flex flex-col space-y-2">
-              <div className="text-sm text-center text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link href="/register" className="text-primary hover:underline">
-                  Sign up
-                </Link>
-              </div>
+            <CardFooter className="text-sm text-center text-muted-foreground">
+              Already have an account?{" "}
+              <Link href="/login" className="text-primary hover:underline">
+                Login
+              </Link>
             </CardFooter>
           </Card>
         </motion.div>
