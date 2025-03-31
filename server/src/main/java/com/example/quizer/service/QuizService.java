@@ -23,24 +23,35 @@ public class QuizService {
 
     public void createQuiz(Map<String, Object> quizData) {
         jdbcTemplate.update(
-                "INSERT INTO quizzes (title, questions, time_limit, due_date) VALUES (?, ?, ?, ?)",
+                "INSERT INTO quizzes (title, description, difficulty, questions, time_limit, due_date, published) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 quizData.get("title"),
-                quizData.get("questions"),
-                quizData.get("timeLimit"),
-                quizData.get("dueDate"));
-    }
-
-    public void updateQuiz(int id, Map<String, Object> quizData) {
-        jdbcTemplate.update(
-                "UPDATE quizzes SET title = ?, questions = ?, time_limit = ?, due_date = ? WHERE id = ?",
-                quizData.get("title"),
+                quizData.get("description"),
+                quizData.get("difficulty"),
                 quizData.get("questions"),
                 quizData.get("timeLimit"),
                 quizData.get("dueDate"),
-                id);
+                quizData.get("published"));
     }
 
-    public void deleteQuiz(int id) {
-        jdbcTemplate.update("DELETE FROM quizzes WHERE id = ?", id);
+    public List<Map<String, Object>> showQuizzes() {
+        return jdbcTemplate.queryForList("SELECT id, title, difficulty, due_date FROM quizzes WHERE published = TRUE");
+    }
+
+    public List<Map<String, Object>> showStudents(int quizId) {
+        return jdbcTemplate.queryForList(
+                "SELECT s.student_id, s.name, qa.score FROM quiz_attempt qa JOIN students s ON qa.student_id = s.student_id WHERE qa.quiz_id = ?",
+                quizId);
+    }
+
+    public void completeQuiz(int studentId, int quizId, int score) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM quiz_attempt WHERE student_id = ? AND quiz_id = ?",
+                Integer.class, studentId, quizId);
+
+        if (count != null && count == 0) {
+            jdbcTemplate.update(
+                    "INSERT INTO quiz_attempt (student_id, quiz_id, score, attempt_date) VALUES (?, ?, ?, NOW())",
+                    studentId, quizId, score);
+        }
     }
 }

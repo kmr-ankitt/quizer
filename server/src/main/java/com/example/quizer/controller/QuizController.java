@@ -7,11 +7,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +24,9 @@ public class QuizController {
     private final String url = System.getProperty("spring.datasource.url");
     private final String username = System.getProperty("spring.datasource.username");
     private final String password = System.getProperty("spring.datasource.password");
+
+    @Autowired
+    private QuizService quizService;
 
     @PostMapping("/generate-quiz")
     public ResponseEntity<String> generateQuiz(@RequestBody Map<String, String> params) {
@@ -52,10 +53,7 @@ public class QuizController {
         }
     }
 
-    @Autowired
-    private QuizService quizService;
-
-    @GetMapping("/quizzes")
+    @GetMapping("/quiz")
     public List<Map<String, Object>> getAllQuizzes() {
         return quizService.getAllQuizzes();
     }
@@ -71,16 +69,22 @@ public class QuizController {
         return "Quiz Created Successfully!";
     }
 
-    @PutMapping("/{id}")
-    public String updateQuiz(@PathVariable int id, @RequestBody Map<String, Object> quizData) {
-        quizService.updateQuiz(id, quizData);
-        return "Quiz Updated Successfully!";
+    @GetMapping("/show-quizzes")
+    public List<Map<String, Object>> showQuizzes() {
+        return quizService.showQuizzes();
     }
 
-    @DeleteMapping("/{id}")
-    public String deleteQuiz(@PathVariable int id) {
-        quizService.deleteQuiz(id);
-        return "Quiz Deleted Successfully!";
+    @GetMapping("/show-students/{quizId}")
+    public List<Map<String, Object>> showStudents(@PathVariable int quizId) {
+        return quizService.showStudents(quizId);
     }
 
+    @PostMapping("/complete-quiz")
+    public String completeQuiz(@RequestBody Map<String, Integer> data) {
+        int studentId = data.get("studentId");
+        int quizId = data.get("quizId");
+        int score = data.get("score");
+        quizService.completeQuiz(studentId, quizId, score);
+        return "Quiz Completed Successfully!";
+    }
 }
