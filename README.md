@@ -7,6 +7,7 @@ Yet another 'Quiz Management System' Application bulid just for college sake.
 - JDBC
 - Next.js 
 - PostgreSQL
+- JDBC
 
 ## Pre-requisites
 - Node.js 
@@ -35,4 +36,4 @@ mvn spring-boot:run
 
 ## Architecture
 
-[View Architecture Diagram]( https://app.eraser.io/workspace/rgUbU6CPW7cc0PQm7zgR?origin=share&elements=_y1X-tB7BVQpdXbzqoO4ww)
+[View Architecture Diagram](https://app.eraser.io/workspace/pNHlgmqH5K7HlpcusALa?origin=share)
