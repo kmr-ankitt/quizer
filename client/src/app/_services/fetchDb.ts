@@ -54,6 +54,19 @@ export const fetchAllQuizzes = async () => {
   }
 };
 
+export const fetchCompletedQuizzes = async () => {
+  try {
+    const response = localStorage.getItem('completedQuizzes');
+    if (response) {
+      const parsedResponse = JSON.parse(response);
+      return [parsedResponse];
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching completed quizzes:', error);
+  }
+}
+
 export const showStudents = async (quizId: number) => {
   try {
     const response = await fetch(`http://localhost:8080/show-students/${quizId}`);
@@ -139,3 +152,16 @@ export const loginUser = async (username: string, password: string) => {
     return null;
   }
 };
+
+
+export const fetchQuizInputs = (title) => {
+  try {
+    const response = localStorage.getItem(`${title.trim().replace(/\s+/g, "-").toLowerCase()}-ans`);
+    if (!response) throw new Error('No data found in localStorage for the given title');
+    const parsedResponse = JSON.parse(response);
+    return parsedResponse;
+  } catch (error) {
+    console.error('Error fetching quiz inputs:', error);
+    return null;
+  }
+}

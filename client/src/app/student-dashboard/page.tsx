@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { motion } from "framer-motion"
 import { Search, Menu, X, Clock } from "lucide-react"
@@ -14,24 +14,30 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
 import { useRouter } from "next/navigation"
-
-// Sample data
-const availableQuizzes = [
-  { id: 1, title: "Data Structures", questions: 10, timeLimit: "30 min", dueDate: "2023-10-30" },
-  { id: 2, title: "Algorithms", questions: 15, timeLimit: "45 min", dueDate: "2023-11-05" },
-  { id: 3, title: "Operating Systems", questions: 20, timeLimit: "60 min", dueDate: "2023-11-10" },
-]
-
-const completedQuizzes = [
-  { id: 1, title: "Computer Networks", questions: 12, score: 85, date: "2023-09-28" },
-  { id: 2, title: "Database Management", questions: 15, score: 92, date: "2023-09-20" },
-  { id: 3, title: "Software Engineering", questions: 10, score: 78, date: "2023-09-15" },
-]
+import { fetchAllQuizzes, fetchCompletedQuizzes } from "../_services/fetchDb"
 
 export default function StudentDashboard() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [quizzes, setQuizzes] = useState<any[]>([])
+  const [completedQuizzes, setCompletedQuizzes] = useState<any>([])
   const router = useRouter()
-  
+
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const fetchedQuizzes = await fetchAllQuizzes()
+        const completedQuizzesResult = (await fetchCompletedQuizzes()) || []
+        const [completedQuiz] = completedQuizzesResult
+        setQuizzes(fetchedQuizzes)
+        setCompletedQuizzes(completedQuiz)
+      } catch (error) {
+        console.error("Failed to fetch quizzes:", error)
+      }
+    }
+    fetchQuizzes()
+  }, [])
+
+  console.log(completedQuizzes)
   const logout = () => {
     localStorage.removeItem("session")
     router.push("/")
@@ -97,9 +103,9 @@ export default function StudentDashboard() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {availableQuizzes.map((quiz) => (
+                    {quizzes.flat().map((quiz, index) => (
                       <motion.div
-                        key={quiz.id}
+                        key={quiz.title}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3 }}
@@ -108,7 +114,7 @@ export default function StudentDashboard() {
                           <CardHeader>
                             <CardTitle>{quiz.title}</CardTitle>
                             <CardDescription>
-                              {quiz.questions} questions · {quiz.timeLimit}
+                              {quiz.questionCount} questions · {quiz.timeLimit} min
                             </CardDescription>
                           </CardHeader>
                           <CardContent className="flex-1">
@@ -125,7 +131,7 @@ export default function StudentDashboard() {
                             </div>
                           </CardContent>
                           <CardFooter>
-                            <Link href={`/quiz/${quiz.id}`} className="w-full">
+                            <Link href={`/quiz/${index}`} className="w-full">
                               <Button className="w-full">Start Quiz</Button>
                             </Link>
                           </CardFooter>
@@ -202,7 +208,14 @@ export default function StudentDashboard() {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary/10">
                           <span className="text-sm text-muted-foreground">Average Score</span>
-                          <span className="text-3xl font-bold">85%</span>
+                          <span className="text-3xl font-bold">
+                            {completedQuizzes.length > 0
+                              ? `${(
+                                completedQuizzes.reduce((acc, quiz) => acc + quiz.score, 0) /
+                                completedQuizzes.length
+                              ).toFixed(2)}%`
+                              : "N/A"}
+                          </span>
                         </div>
                         <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary/10">
                           <span className="text-sm text-muted-foreground">Quizzes Completed</span>
@@ -210,7 +223,11 @@ export default function StudentDashboard() {
                         </div>
                         <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-primary/10">
                           <span className="text-sm text-muted-foreground">Best Score</span>
-                          <span className="text-3xl font-bold">92%</span>
+                          <span className="text-3xl font-bold">
+                            {completedQuizzes.length > 0
+                              ? `${Math.max(...completedQuizzes.map((quiz) => quiz.score))}%`
+                              : "N/A"}
+                          </span>
                         </div>
                       </div>
                     </CardContent>
