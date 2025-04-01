@@ -288,7 +288,6 @@ export default function TeacherDashboard() {
                           <TableRow>
                             <TableHead>Name</TableHead>
                             <TableHead className="hidden md:table-cell">Email</TableHead>
-                            <TableHead className="hidden md:table-cell">Quizzes Taken</TableHead>
                             <TableHead>Avg. Score</TableHead>
                           </TableRow>
                         </TableHeader>
@@ -310,21 +309,24 @@ export default function TeacherDashboard() {
                                 </div>
                               </TableCell>
                               <TableCell className="hidden md:table-cell">{student.user_id}</TableCell>
-                              <TableCell className="hidden md:table-cell">{student.quiz_attempted}</TableCell>
                               <TableCell>
                                 <Badge
                                   variant={
-                                    (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 90
-                                      ? "default"
-                                      : (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 70
-                                        ? "secondary"
-                                        : "destructive"
+                                    Array.isArray(student.quiz_score) && student.quiz_score.length > 0
+                                      ? (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 90
+                                        ? "default"
+                                        : (student.quiz_score.reduce((a, b) => a + b, 0) / student.quiz_score.length) >= 70
+                                          ? "secondary"
+                                          : "destructive"
+                                      : "destructive"
                                   }
                                 >
-                                  {(
-                                    student.quiz_score.reduce((a, b) => a + b, 0) /
-                                    student.quiz_score.length
-                                  ).toFixed(2)}%
+                                  {Array.isArray(student.quiz_score) && student.quiz_score.length > 0
+                                    ? (
+                                        student.quiz_score.reduce((a, b) => a + b, 0) /
+                                        student.quiz_score.length
+                                      ).toFixed(2)
+                                    : "0.00"}%
                                 </Badge>
                               </TableCell>
                             </TableRow>
