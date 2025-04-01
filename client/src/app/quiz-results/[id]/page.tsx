@@ -8,91 +8,88 @@ import { Progress } from "@/components/ui/progress"
 import { ModeToggle } from "@/components/mode-toggle"
 import { ArrowLeft, CheckCircle, XCircle, Home } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
+import { useEffect, useState } from "react"
+import { fetchAllQuizzes, fetchQuizInputs } from "@/app/_services/fetchDb"
 
-// Sample quiz result data
-const quizResult = {
-  id: 1,
-  title: "Math Fundamentals",
-  score: 80,
-  totalQuestions: 5,
-  correctAnswers: 4,
-  timeTaken: "12:45",
-  date: "2023-10-15",
-  questions: [
-    {
-      id: 1,
-      text: "What is 9 × 7?",
-      userAnswer: "b",
-      correctAnswer: "b",
-      options: [
-        { id: "a", text: "56" },
-        { id: "b", text: "63" },
-        { id: "c", text: "72" },
-        { id: "d", text: "81" },
-      ],
-      isCorrect: true,
-      explanation: "9 × 7 = 63",
-    },
-    {
-      id: 2,
-      text: "Solve for x: 3x + 5 = 20",
-      userAnswer: "b",
-      correctAnswer: "b",
-      options: [
-        { id: "a", text: "x = 3" },
-        { id: "b", text: "x = 5" },
-        { id: "c", text: "x = 7.5" },
-        { id: "d", text: "x = 15" },
-      ],
-      isCorrect: true,
-      explanation: "3x + 5 = 20, 3x = 15, x = 5",
-    },
-    {
-      id: 3,
-      text: "What is the area of a circle with radius 4?",
-      userAnswer: "b",
-      correctAnswer: "c",
-      options: [
-        { id: "a", text: "8π" },
-        { id: "b", text: "12π" },
-        { id: "c", text: "16π" },
-        { id: "d", text: "64π" },
-      ],
-      isCorrect: false,
-      explanation: "Area of a circle = πr², so πr² = π × 4² = 16π",
-    },
-    {
-      id: 4,
-      text: "What is the square root of 144?",
-      userAnswer: "a",
-      correctAnswer: "a",
-      options: [
-        { id: "a", text: "12" },
-        { id: "b", text: "14" },
-        { id: "c", text: "16" },
-        { id: "d", text: "24" },
-      ],
-      isCorrect: true,
-      explanation: "√144 = 12",
-    },
-    {
-      id: 5,
-      text: "If a rectangle has length 8 and width 6, what is its perimeter?",
-      userAnswer: "c",
-      correctAnswer: "c",
-      options: [
-        { id: "a", text: "14" },
-        { id: "b", text: "24" },
-        { id: "c", text: "28" },
-        { id: "d", text: "48" },
-      ],
-      isCorrect: true,
-      explanation: "Perimeter = 2(length + width) = 2(8 + 6) = 2(14) = 28",
-    },
-  ],
-}
+export default function QuizResultsPage({ params }: { params: Promise<{ id: string }> }) {
+  const [quizResult, setQuizResult] = useState<{
+    title: string;
+    date: string;
+    timeTaken: string;
+    score: number;
+    correctAnswers: number;
+    totalQuestions: number;
+    questions: {
+      id: number;
+      text: string;
+      options: {
+        id: string;
+        text: string;
+      }[];
+      correctAnswer: string;
+      userAnswer: string;
+      isCorrect: boolean;
+      explanation: string;
+    }[];
+  } | null>(null);
+  const [input, setInput] = useState<Array<{ key: string }>>([]);
 
-export default function QuizResultsPage({ params }: { params: { id: string } }) {
+  useEffect(() => {
+    params.then(async (resolvedParams) => {
+      try {
+        const [quizzes] = await fetchAllQuizzes();
+        const quizInputs = await fetchQuizInputs(quizzes[resolvedParams.id].title);
+        setInput(quizInputs);
+
+        if (quizInputs && typeof quizInputs === "object") {
+          const quizData = quizzes[resolvedParams.id];
+          const questions = quizData.questions.map((question: any) => ({
+            ...question,
+            userAnswer: quizInputs[question.id],
+            isCorrect: quizInputs[question.id] === question.correctAnswer,
+          }));
+
+          // console.log(quizData)
+          setQuizResult({
+            title: quizData.title,
+            date: quizData.dueDate,
+            timeTaken: quizData.timeTaken,
+            score: Math.round(
+              (questions.filter((q: any) => q.isCorrect).length / questions.length) * 100
+            ),
+            correctAnswers: questions.filter((q: any) => q.isCorrect).length,
+            totalQuestions: questions.length,
+            questions,
+          });
+
+          const completedQuiz = {
+            id: resolvedParams.id,
+            title: quizData.title,
+            questions: questions.length,
+            score: Math.round(
+              (questions.filter((q: any) => q.isCorrect).length / questions.length) * 100
+            ),
+            date: quizData.dueDate,
+          };
+
+          const completedQuizzes = JSON.parse(localStorage.getItem("completedQuizzes") || "[]");
+          const updatedQuizzes = [...completedQuizzes.filter((quiz: any) => quiz.id !== completedQuiz.id), completedQuiz];
+          localStorage.setItem("completedQuizzes", JSON.stringify(updatedQuizzes));
+        }
+      } catch (error) {
+        console.error("Failed to fetch quiz:", error);
+      }
+    });
+  }, [params]);
+
+  if (!quizResult) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -116,7 +113,7 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
               <CardHeader className="pb-2">
                 <CardTitle>{quizResult.title}</CardTitle>
                 <CardDescription>
-                  Completed on {new Date(quizResult.date).toLocaleDateString()} · Time taken: {quizResult.timeTaken}
+                  Completed on {new Date(quizResult.date).toLocaleDateString()}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -146,12 +143,12 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
                         <Progress
                           value={quizResult.score}
                           className={`h-2 ${quizResult.score >= 90
-                              ? "bg-green-500"
-                              : quizResult.score >= 70
-                                ? "bg-blue-500"
-                                : quizResult.score >= 50
-                                  ? "bg-amber-500"
-                                  : "bg-red-500"
+                            ? "bg-green-500"
+                            : quizResult.score >= 70
+                              ? "bg-blue-500"
+                              : quizResult.score >= 50
+                                ? "bg-amber-500"
+                                : "bg-red-500"
                             }`}
                         />
                       </div>
@@ -235,10 +232,6 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
                       ))}
                     </div>
 
-                    <div className="mt-4 p-3 rounded-lg bg-muted/50">
-                      <p className="text-sm font-medium">Explanation:</p>
-                      <p className="text-sm text-muted-foreground">{question.explanation}</p>
-                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -249,4 +242,3 @@ export default function QuizResultsPage({ params }: { params: { id: string } }) 
     </div>
   )
 }
-
