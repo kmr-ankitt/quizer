@@ -42,6 +42,17 @@ export default function RegisterPage() {
     },
   })
 
+  useEffect(() => {
+    const sessionData = localStorage.getItem("session");
+    if (sessionData) {
+      const session = JSON.parse(sessionData);
+      console.log("Session" , session)
+      if (session) {
+        router.push(`/${session.userType}-dashboard`);
+      }
+    }
+  });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       const response = await registerUser(values.username, values.password, values.userType)
@@ -60,15 +71,6 @@ export default function RegisterPage() {
     }
   }
 
-  useEffect(() => {
-    const sessionData = localStorage.getItem("session");
-    if (sessionData) {
-      const session = JSON.parse(sessionData);
-      if (session) {
-        router.push(`/${userType}-dashboard`);
-      }
-    }
-  });
 
   return (
     <div className="min-h-screen flex flex-col">

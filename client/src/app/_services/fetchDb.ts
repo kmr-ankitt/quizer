@@ -20,34 +20,24 @@ export const fetchQuizById = async (id: number) => {
   }
 };
 
-export const createQuiz = async (quizData: {
-  title: string;
-  description: string;
-  difficulty: string;
-  questions: number;
-  timeLimit: string;
-  dueDate: string;
-  published: boolean;
-}) => {
+export const createQuiz = async (quizData) => {
   try {
-    const response = await fetch('http://localhost:8080/set-quiz', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(quizData),
-    });
-
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-    console.log('Quiz created successfully');
+    console.log('Quiz created successfully:', quizData);
+    localStorage.setItem('createdQuiz', JSON.stringify(quizData));
+    return true;
   } catch (error) {
     console.error('Error creating quiz:', error);
+    return false;
   }
 };
 
 export const showQuizzes = async () => {
   try {
-    const response = await fetch('http://localhost:8080/show-quizzes');
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-    return await response.json();
+    const quizzes = localStorage.getItem('createdQuiz');
+    if (quizzes) {
+      return [JSON.parse(quizzes)];
+    }
+    return [];
   } catch (error) {
     console.error('Error fetching published quizzes:', error);
     return [];
@@ -128,9 +118,12 @@ export const loginUser = async (username: string, password: string) => {
       throw new Error(`Server error: ${response.status} - ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const contentType = response.headers.get('Content-Type');
+    const data = contentType && contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
     console.log('Login successful:', data);
-    return data; // Could contain JWT or session data
+    return data; // Could contain JWT, session data, or plain text
   } catch (error) {
     console.error('Error logging in:', error);
     return null;
