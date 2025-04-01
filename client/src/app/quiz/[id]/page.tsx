@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -21,89 +21,84 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { fetchAllQuizzes } from "@/app/_services/fetchDb"
 
-// Sample quiz data
-const quizData = {
-  id: 1,
-  title: "Data Structures",
-  description: "Test your knowledge of fundamental data structures",
-  timeLimit: 45, // minutes
-  questions: [
-    {
-      id: 1,
-      text: "What is the time complexity of searching in a balanced binary search tree?",
-      options: [
-        { id: "a", text: "O(n)" },
-        { id: "b", text: "O(log n)" },
-        { id: "c", text: "O(1)" },
-        { id: "d", text: "O(n^2)" },
-      ],
-      correctAnswer: "b",
-    },
-    {
-      id: 2,
-      text: "Which data structure is used for implementing recursion?",
-      options: [
-        { id: "a", text: "Queue" },
-        { id: "b", text: "Stack" },
-        { id: "c", text: "Array" },
-        { id: "d", text: "Linked List" },
-      ],
-      correctAnswer: "b",
-    },
-    {
-      id: 3,
-      text: "What is the best case time complexity of bubble sort?",
-      options: [
-        { id: "a", text: "O(n)" },
-        { id: "b", text: "O(n log n)" },
-        { id: "c", text: "O(n^2)" },
-        { id: "d", text: "O(1)" },
-      ],
-      correctAnswer: "a",
-    },
-    {
-      id: 4,
-      text: "Which of the following is a self-balancing binary search tree?",
-      options: [
-        { id: "a", text: "Binary Heap" },
-        { id: "b", text: "AVL Tree" },
-        { id: "c", text: "Hash Table" },
-        { id: "d", text: "Trie" },
-      ],
-      correctAnswer: "b",
-    },
-    {
-      id: 5,
-      text: "What is the maximum number of children a node can have in a binary tree?",
-      options: [
-        { id: "a", text: "1" },
-        { id: "b", text: "2" },
-        { id: "c", text: "3" },
-        { id: "d", text: "4" },
-      ],
-      correctAnswer: "b",
-    },
-  ],
-}
-
-export default function QuizPage({ params }: { params: { id: string } }) {
+export default function QuizPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const [currentQuestion, setCurrentQuestion] = useState(0)
   const [answers, setAnswers] = useState<Record<number, string>>({})
-  const [timeRemaining, ] = useState(quizData.timeLimit * 60) // seconds
+  const [timeRemaining, setTimeRemaining] = useState(0) // seconds
   const [exitDialogOpen, setExitDialogOpen] = useState(false)
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false)
+  const [quizData, setQuizData] = useState<{
+    title: string;
+    description: string;
+    subject: string;
+    difficulty: string;
+    timeLimit: string;
+    dueDate: string;
+    published: boolean;
+    questions: {
+      id: number;
+      question_text: string;
+      options: {
+        id: string;
+        text: string;
+      }[];
+      correctAnswer: string;
+    }[];
+    questionCount: number;
+  } | null>(null);
+  const [unwrappedParams, setUnwrappedParams] = useState<{ id: string } | null>(null)
+
+  useEffect(() => {
+    params.then((resolvedParams) => setUnwrappedParams(resolvedParams))
+  }, [params])
+
+  useEffect(() => {
+    if (!unwrappedParams) return
+
+    const fetchQuiz = async () => {
+      try {
+        const quizzes = await fetchAllQuizzes()
+        const [quiz] = quizzes.find((_, index: number) => index === Number(unwrappedParams.id))
+        if (quiz) {
+          setQuizData(quiz)
+          setTimeRemaining(quiz.timeLimit * 60)
+        } else {
+          console.error("Quiz not found")
+        }
+      } catch (error) {
+        console.error("Failed to fetch quiz:", error)
+      }
+    }
+    fetchQuiz()
+  }, [unwrappedParams])
+
+  console.log(quizData)
+
+  useEffect(() => {
+    if (timeRemaining > 0) {
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => prev - 1)
+      }, 1000)
+      return () => clearInterval(timer)
+    }
+  }, [timeRemaining])
 
   const handleAnswer = (value: string) => {
-    setAnswers({
-      ...answers,
-      [quizData.questions[currentQuestion].id]: value,
-    })
+    if (quizData) {
+      const updatedAnswers = {
+        ...answers,
+        [quizData.questions[currentQuestion].id]: value,
+      }
+      setAnswers(updatedAnswers)
+      localStorage.setItem(`${quizData.title.trim().replace(/\s+/g, "-").toLowerCase()}-ans`, JSON.stringify(updatedAnswers))
+    }
   }
 
   const handleNext = () => {
-    if (currentQuestion < quizData.questions.length - 1) {
+    if (quizData && currentQuestion < quizData.questions.length - 1) {
       setCurrentQuestion(currentQuestion + 1)
     }
   }
@@ -115,22 +110,32 @@ export default function QuizPage({ params }: { params: { id: string } }) {
   }
 
   const handleSubmit = () => {
-    router.push(`/quiz-results/${params.id}`)
+    if (unwrappedParams) {
+      router.push(`/quiz-results/${unwrappedParams.id}`)
+    }
   }
 
-  const progress = ((currentQuestion + 1) / quizData.questions.length) * 100
+  const progress = quizData
+    ? ((currentQuestion + 1) / quizData.questions.length) * 100
+    : 0
 
-  // Format time remaining as MM:SS
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60)
     const remainingSeconds = seconds % 60
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`
+  }
+
+  if (!quizData) {
+    return <div>Loading...</div>
   }
 
   return (
     <div className="min-h-screen flex flex-col">
+      {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className=" flex px-5 h-16 items-center justify-between">
+        <div className="flex px-5 h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => setExitDialogOpen(true)}>
               <ArrowLeft className="h-5 w-5" />
@@ -147,6 +152,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="flex-1 py-6">
         <div className="max-w-3xl mx-auto">
           <div className="mb-6">
@@ -169,7 +175,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
             >
               <Card className="backdrop-blur-sm bg-card/50 border shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-xl">{quizData.questions[currentQuestion].text}</CardTitle>
+                  <CardTitle className="text-xl">{quizData.questions[currentQuestion].question_text}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <RadioGroup
@@ -177,7 +183,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
                     onValueChange={handleAnswer}
                     className="space-y-3"
                   >
-                    {quizData.questions[currentQuestion].options.map((option) => (
+                    {quizData.questions[currentQuestion].options.map((option: { id: string; text: string }) => (
                       <div
                         key={option.id}
                         className={`flex items-center rounded-lg border p-4 transition-colors ${answers[quizData.questions[currentQuestion].id] === option.id
@@ -221,7 +227,7 @@ export default function QuizPage({ params }: { params: { id: string } }) {
           </AnimatePresence>
 
           <div className="mt-6 flex flex-wrap gap-2 justify-center">
-            {quizData.questions.map((question, index) => (
+            {quizData.questions.map((question: { id: number; question_text: string; options: { id: string; text: string }[]; correctAnswer: string }, index: number) => (
               <Button
                 key={question.id}
                 variant="outline"
@@ -292,4 +298,3 @@ export default function QuizPage({ params }: { params: { id: string } }) {
     </div>
   )
 }
-
