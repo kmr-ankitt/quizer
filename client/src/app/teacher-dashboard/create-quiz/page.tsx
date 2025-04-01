@@ -19,7 +19,6 @@ import { ModeToggle } from "@/components/mode-toggle"
 import { Switch } from "@radix-ui/react-switch"
 import { fetchGeneratedQuestions } from "@/app/_services/fetchGeneratedQuestions"
 import { createQuiz } from "@/app/_services/fetchDb"
-import { Question } from "@/app/_types/type"
 
 const formSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -33,6 +32,13 @@ const formSchema = z.object({
 
 export default function CreateQuizPage() {
   const router = useRouter()
+  type Question = {
+    id: number;
+    text: string;
+    options: { id: string; text: string }[];
+    correctAnswer: string;
+  };
+
   const [questions, setQuestions] = useState<Question[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
 
@@ -66,7 +72,7 @@ export default function CreateQuizPage() {
       questions: questions.map((question) => ({
         id: question.id,
         question_text: question.text,
-        options: question.options.map((option) => ({
+        options: question.options.map((option: { id: string; text: string }) => ({
           id: option.id,
           text: option.text,
         })),
