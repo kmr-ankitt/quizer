@@ -78,7 +78,7 @@ export default function Home() {
       </main>
       <footer className="border-t py-6">
         <div className="container flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-          <p className="text-sm text-muted-foreground">© 2025 QuizMaster. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2025 Quizer. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <Link href="/terms" className="text-sm text-muted-foreground hover:underline">
               Terms

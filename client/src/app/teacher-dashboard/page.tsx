@@ -136,7 +136,7 @@ export default function TeacherDashboard() {
               {mobileMenuOpen ? <X /> : <Menu />}
             </Button>
             <Link href="/" className="font-bold text-xl">
-              QuizMaster
+              Quizer
             </Link>
           </div>
           <div className="flex items-center gap-4">
