@@ -1,14 +1,3 @@
-export const fetchAllQuizzes = async () => {
-  try {
-    const response = await fetch('http://localhost:8080/quiz');
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching quizzes:', error);
-    return [];
-  }
-};
-
 export const fetchQuizById = async (id: number) => {
   try {
     const response = await fetch(`http://localhost:8080/${id}`);
@@ -20,10 +9,31 @@ export const fetchQuizById = async (id: number) => {
   }
 };
 
-export const createQuiz = async (quizData) => {
+export const createQuiz = async (quizData: {
+  title: string;
+  description: string;
+  subject: string;
+  difficulty: string;
+  timeLimit: string;
+  dueDate: string;
+  published: boolean;
+  questions: Array<{
+    id: number;
+    question_text: string;
+    options: Array<{
+      id: string;
+      text: string;
+    }>;
+    correctAnswer: string;
+  }>;
+  questionCount: number;
+}) => {
   try {
+    const existingQuizzes = localStorage.getItem('createdQuiz');
+    const quizzesArray = existingQuizzes ? JSON.parse(existingQuizzes) : [];
+    quizzesArray.push(quizData);
+    localStorage.setItem('createdQuiz', JSON.stringify(quizzesArray));
     console.log('Quiz created successfully:', quizData);
-    localStorage.setItem('createdQuiz', JSON.stringify(quizData));
     return true;
   } catch (error) {
     console.error('Error creating quiz:', error);
@@ -31,7 +41,7 @@ export const createQuiz = async (quizData) => {
   }
 };
 
-export const showQuizzes = async () => {
+export const fetchAllQuizzes = async () => {
   try {
     const quizzes = localStorage.getItem('createdQuiz');
     if (quizzes) {

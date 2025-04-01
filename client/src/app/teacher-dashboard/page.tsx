@@ -35,9 +35,22 @@ import { useRouter } from "next/navigation"
 interface Quiz {
   id: number;
   title: string;
-  questions: number;
-  students: number;
-  due_date: string;
+  description: string;
+  subject: string;
+  difficulty: string;
+  timeLimit: string;
+  dueDate: string;
+  published: boolean;
+  questions: {
+    id: number;
+    question_text: string;
+    options: {
+      id: string;
+      text: string;
+    }[];
+    correctAnswer: string;
+  }[];
+  questionCount: number;
 }
 
 export interface Student {
@@ -50,23 +63,52 @@ export interface Student {
 }
 
 export default function TeacherDashboard() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [, setQuizToDelete] = useState<number | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [quizToDelete, setQuizToDelete] = useState<number | null>(null);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
 
   const router = useRouter();
 
-  const handleDeleteQuiz = () => {
-    setDeleteDialogOpen(false)
-  }
+  const handleDeleteQuiz = async () => {
+    if (quizToDelete !== null) {
+      try {
+        // Remove the specific quiz from the database
+        const updatedQuizzes = quizzes.filter((quiz) => quiz.id !== quizToDelete);
+
+        // Update the state
+        setQuizzes(updatedQuizzes);
+
+        // Close the delete dialog
+        setDeleteDialogOpen(false);
+        setQuizToDelete(null);
+      } catch (error) {
+        console.error("Failed to delete quiz:", error);
+      }
+    }
+  };
 
   useEffect(() => {
     const getData = async () => {
       const quizzesData = await fetchAllQuizzes();
       console.log(quizzesData);
-      setQuizzes(quizzesData);
+
+      // Flatten the nested quizzes array and map to the required structure
+      const formattedQuizzes = quizzesData.flat().map((quiz: any, index: number) => ({
+        id: index + 1, // Assign a unique ID
+        title: quiz.title,
+        description: quiz.description,
+        subject: quiz.subject,
+        difficulty: quiz.difficulty,
+        timeLimit: quiz.timeLimit,
+        dueDate: quiz.dueDate,
+        published: quiz.published,
+        questions: quiz.questions,
+        questionCount: quiz.questions.length,
+      }));
+
+      setQuizzes(formattedQuizzes);
 
       const studentsData = await fetchAllStudents();
       console.log(studentsData);
@@ -166,12 +208,14 @@ export default function TeacherDashboard() {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {quizzes.map((quiz) => (
-                            <TableRow key={quiz.id}>
+                          {quizzes.map((quiz, index) => (
+                            <TableRow key={quiz.id || `quiz-${index}`}>
                               <TableCell className="font-medium">{quiz.title}</TableCell>
-                              <TableCell className="hidden md:table-cell">{quiz.questions}</TableCell>
+                              <TableCell className="hidden md:table-cell">{quiz.questionCount}</TableCell>
                               <TableCell className="hidden md:table-cell">
-                                {quiz.due_date ? new Date(quiz.due_date).toLocaleDateString() : "N/A"}
+                                {quiz.dueDate && !isNaN(new Date(quiz.dueDate).getTime())
+                                  ? new Date(quiz.dueDate).toISOString().split("T")[0]
+                                  : "Invalid Date"}
                               </TableCell>
                               <TableCell className="text-right">
                                 <DropdownMenu>

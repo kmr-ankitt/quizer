@@ -18,6 +18,8 @@ import { Separator } from "@/components/ui/separator"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Switch } from "@radix-ui/react-switch"
 import { fetchGeneratedQuestions } from "@/app/_services/fetchGeneratedQuestions"
+import { createQuiz } from "@/app/_services/fetchDb"
+import { Question } from "@/app/_types/type"
 
 const formSchema = z.object({
   title: z.string().min(3, { message: "Title must be at least 3 characters" }),
@@ -28,13 +30,6 @@ const formSchema = z.object({
   timeLimit: z.coerce.number().min(5).max(120),
   isPublished: z.boolean().default(false),
 })
-
-type Question = {
-  id: number
-  text: string
-  options: { id: string; text: string }[]
-  correctAnswer: string
-}
 
 export default function CreateQuizPage() {
   const router = useRouter()
@@ -60,8 +55,33 @@ export default function CreateQuizPage() {
       return;
     }
 
+    const responseFormat = {
+      title: values.title,
+      description: values.description,
+      subject: values.subject,
+      difficulty: values.difficulty,
+      timeLimit: values.timeLimit.toString(),
+      dueDate: new Date().toISOString(),
+      published: values.isPublished,
+      questions: questions.map((question) => ({
+        id: question.id,
+        question_text: question.text,
+        options: question.options.map((option) => ({
+          id: option.id,
+          text: option.text,
+        })),
+        correctAnswer: question.correctAnswer,
+      })),
+      questionCount: questions.length,
+    }
+    console.log(responseFormat)
+
     try {
-      router.push("/");
+      const response = await createQuiz(responseFormat)
+
+      console.log(response)
+
+      router.push("/teacher-dashboard")
     } catch (error) {
       console.error("Failed to create quiz:", error);
     }
@@ -237,7 +257,7 @@ export default function CreateQuizPage() {
                       control={form.control}
                       name="isPublished"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                        <FormItem className="flex flex-row  items-center justify-between rounded-lg border p-4">
                           <div className="space-y-0.5">
                             <FormLabel className="text-base">Publish Quiz</FormLabel>
                             <FormDescription>Make this quiz available to students immediately</FormDescription>
