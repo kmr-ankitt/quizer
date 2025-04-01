@@ -44,7 +44,6 @@ public class QuizGenerate {
             GenerateContentResponse response = client.models.generateContent("gemini-2.0-flash-001", prompt, null);
             String responseText = response.text();
 
-            System.out.println("Response: " + responseText);
             return responseText;
         } catch (IOException e) {
             System.out.println("Error: " + e.getMessage());
