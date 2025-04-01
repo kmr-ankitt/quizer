@@ -61,10 +61,13 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     const fetchQuiz = async () => {
       try {
         const quizzes = await fetchAllQuizzes()
-        const [quiz] = quizzes.find((_, index: number) => index === Number(unwrappedParams.id))
+        const flattenedQuizzes = quizzes.flat() // Flatten the nested array
+        console.log(flattenedQuizzes)
+        const quiz = flattenedQuizzes.find((quiz, index ) => index === Number(unwrappedParams.id))
+        console.log(quiz)
         if (quiz) {
           setQuizData(quiz)
-          setTimeRemaining(quiz.timeLimit * 60)
+          setTimeRemaining(Number(quiz.timeLimit) * 60) // Ensure timeLimit is treated as a number
         } else {
           console.error("Quiz not found")
         }
@@ -75,7 +78,7 @@ export default function QuizPage({ params }: { params: Promise<{ id: string }> }
     fetchQuiz()
   }, [unwrappedParams])
 
-  console.log(quizData)
+  console.log("this is sa",quizData)
 
   useEffect(() => {
     if (timeRemaining > 0) {
