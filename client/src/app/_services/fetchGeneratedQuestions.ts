@@ -29,7 +29,6 @@ export const fetchGeneratedQuestions = async ({
     text = text.replace(/```json|```/g, '').trim();
 
     const data = JSON.parse(text);
-    console.log("Fetched Questions:", data);
     return data;
   } catch (error) {
     console.error('Error fetching generated questions:', error);

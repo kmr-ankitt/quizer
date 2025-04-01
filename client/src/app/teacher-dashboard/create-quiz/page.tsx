@@ -169,13 +169,16 @@ export default function CreateQuizPage() {
                                   <SelectValue placeholder="Select a subject" />
                                 </SelectTrigger>
                               </FormControl>
-                              <SelectContent>
+                                <SelectContent>
                                 <SelectItem value="data_structures">Data Structures</SelectItem>
-                                <SelectItem value="operating_systems">Operating Systems</SelectItem>
+                                <SelectItem value="object-oriented-programming">Object Oriented Programming</SelectItem>
                                 <SelectItem value="computer_networks">Computer Networks</SelectItem>
                                 <SelectItem value="database_management">Database Management</SelectItem>
                                 <SelectItem value="artificial_intelligence">Artificial Intelligence</SelectItem>
-                              </SelectContent>
+                                <SelectItem value="software_engineering">Software Engineering</SelectItem>
+                                <SelectItem value="cyber_security">Cyber Security</SelectItem>
+                                <SelectItem value="machine_learning">Machine Learning</SelectItem>
+                                </SelectContent>
                             </Select>
                             <FormMessage />
                           </FormItem>
