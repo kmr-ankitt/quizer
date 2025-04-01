@@ -30,7 +30,7 @@ public class QuizController {
 
     @PostMapping("/generate-quiz")
     public ResponseEntity<String> generateQuiz(@RequestBody Map<String, String> params) {
-        String topic = params.get("topic");
+        String topic = params.get("subject");
         String difficulty = params.get("difficulty");
         int numberOfQuestions = Integer.parseInt(params.get("numberOfQuestions"));
 
