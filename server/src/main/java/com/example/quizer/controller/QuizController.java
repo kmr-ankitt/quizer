@@ -58,15 +58,10 @@ public class QuizController {
         return quizService.getAllQuizzes();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/quiz/{id}")
     public Map<String, Object> getQuizById(@PathVariable int id) {
-        return quizService.getQuizById(id);
-    }
-
-    @PostMapping("/set-quiz")
-    public String createQuiz(@RequestBody Map<String, Object> quizData) {
-        quizService.createQuiz(quizData);
-        return "Quiz Created Successfully!";
+        return quizService.getQuizById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Quiz not found with id: " + id));
     }
 
     @GetMapping("/show-quizzes")
